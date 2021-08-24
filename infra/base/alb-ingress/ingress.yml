@@ -1,0 +1,30 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+    name: vote
+    namespace: vote
+    annotations:
+        kubernetes.io/ingress.class: "alb"
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}, {"HTTPS": 50000}]'
+        # alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+        alb.ingress.kubernetes.io/group.name: eks-sysdig
+        alb.ingress.kubernetes.io/success-codes: 200,403
+spec:
+  rules:
+  - host: vote.kitsys.net
+    http:
+      paths:
+      - backend:
+          serviceName: vote
+          servicePort: 5000
+        path: /
+  - host: vote.kitsys.net
+    http:
+      paths:
+      - backend:
+          serviceName: result
+          servicePort: 5001
+        path: /result
