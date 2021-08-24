@@ -22,3 +22,4 @@ spec:
       name: alb-ingress-controller
       create: false
     ingressClass: alb
+    clusterName: eks-sysdig
