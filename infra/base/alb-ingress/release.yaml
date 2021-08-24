@@ -20,6 +20,6 @@ spec:
   values:
     serviceAccount:
       name: alb-ingress-controller
-      create: false
+      create: true
     ingressClass: alb
     clusterName: eks-sysdig
