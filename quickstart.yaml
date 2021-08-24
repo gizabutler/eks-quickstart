@@ -10,33 +10,44 @@
     k8s_worker_nodes_group_name: worker
     spot_enabled: "true"
     sysdig_key: ""
+    aws_profile: "default"
   roles:
     - role: eksctl
       tags: eks
 
   tasks:
+
+  - name: Set kube context
+    set_fact:
+      kube_context: "{{ lookup('pipe','kubectl config current-context') }}"
+
   - name: Create a k8s namespace
-    command: "echo -e 'apiVersion: v1\nkind: Namespace\nmetadata:\n  name: {{ item }}' | kubectl apply -f - "
+    k8s:
+      context: "{{ kube_context }}"
+      name: "{{ item }}"
+      api_version: v1
+      kind: Namespace
+      state: present
     with_items:
       - vote
       - sysdig
-      
+
   - name: Clone voting app
     git:
       repo: https://github.com/dockersamples/example-voting-app.git
       dest: /tmp/vote
-  
+
   - name: Deploy voting app in cluster
     command: "kubectl apply -f {{ item }}"
     loop: "{{ lookup('fileglob', '/tmp/vote/k8s-specifications/*', wantlist=True) }}"
 
-  #- name: Connect Sysdig to AWS using cloudformation template
+  # #- name: Connect Sysdig to AWS using cloudformation template
 
   - name: Deploy sysdig agent
     shell: |
       helm repo add sysdig https://charts.sysdig.com
       helm repo update
-      helm install sysdig-agent \
+      helm upgrade --install sysdig-agent \
       --set sysdig.accessKey="{{ sysdig_key }}" \
       --set sysdig.settings.collector=ingest-us2.app.sysdig.com \
       --set sysdig.settings.collector_port=6443 sysdig/sysdig \
@@ -45,5 +56,8 @@
       --set resources.requests.memory=512Mi \
       --set resources.limits.cpu=500m \
       --set resources.limits.memory=1Gi \
-      --set clusterName=eks-sysdig 
+      --set clusterName=eks-sysdig
       # --namespace sysdig
+
+  # - name: Flux bootstrap
+  #   shell: |
