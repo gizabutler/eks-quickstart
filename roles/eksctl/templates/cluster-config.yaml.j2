@@ -1,0 +1,15 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: "{{ eks_cluster_name }}"
+  region: "{{ region }}"
+  version: "{{ k8s_version }}"
+iam:
+  withOIDC: true
+managedNodeGroups:
+  - name: "{{ k8s_worker_nodes_group_name }}"
+    instanceTypes: ["{{ k8s_worker_nodes_instance_type }}"]
+    minSize: 0
+    desiredCapacity: 2
+    maxSize: 4
+    spot: true

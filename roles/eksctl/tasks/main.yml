@@ -1,0 +1,19 @@
+- name: "Generate cluster-config.yaml"
+  template:
+    src: "cluster-config.yaml.j2"
+    dest: /tmp/cluster-config.yaml
+
+- name: "Getting existing clusters list"
+  command: "aws --region {{ region }} eks list-clusters --query '[clusters'] --output text"
+  register: clusters_exist
+
+# create a list from the clusters_exist
+- set_fact:
+    found_clusters_list: "{{ clusters_exist.stdout.split('\t') }}"
+
+- name: "Setting eksctl action to either Create or upgrade"
+  set_fact:
+    eksctl_action: "{{ 'create' if (eks_cluster_name not in found_clusters_list) else 'upgrade' }}"
+
+- name: "Running eksctl eksctl_action {{ eksctl_action | upper }} cluster with name {{ eks_cluster_name | upper }}"
+  command: "eksctl {{ eksctl_action }} cluster -f /tmp/cluster-config.yaml"
