@@ -12,14 +12,14 @@ spec:
     - host: vote.gizabutler.com
       http:
         paths:
-          - path: /
+          - path: /*
             backend:
               serviceName: vote
               servicePort: 5000
     - host: result.gizabutler.com
       http:
         paths:
-          - path: /
+          - path: /*
             backend:
               serviceName: result
               servicePort: 5001
